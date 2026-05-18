@@ -29,7 +29,7 @@ time <- seq(0, 10, by = 0.05)
 # Standard deviation vector for weighting in fitting
 sd <- seq(1, length(time))
 sd[1:40] <- 0.5               # Higher uncertainty at early times
-sd[40:length(time)] <- 2  # Lower uncertainty at later times
+sd[40:length(time)] <- 2      # Lower uncertainty at later times
 
 
 # Create observed dataset for a specific potential (column 14, rows 200–400)
@@ -48,17 +48,17 @@ plot(Obs, xlab = "Time / s", ylab = expression("j / uA"%.%"cm"^{-2}, lwd = 3))
 
 # Assign named kinetic rate constants
 k   <- c(
-  Sig  = 1e5,      # Excitation rate
-  kd   = 5e5, #50569.53,   # Decay of excited state
-  ket1 = 2.189841e+05,    #1.452293e+05# Electron transfer rate to donor
-  kps1 = 7.015626e+00,   # Product separation from donor complex
-  kb1  = 1.847824e+01,       # Back reaction rate for donor complex
-  ket2 = 1.037287e+05,   # Electron transfer to acceptor
-  kb2  = 8.154705e-02,      #1.57 # Back reaction for acceptor complex
-  kps2 = 9.970302e+02         # Product separation from acceptor complex
+  Sig  = 1e5,              # Excitation rate
+  kd   = 5e5,              # Decay of excited state
+  ket1 = 2.189841e+05,     # Electron transfer rate to donor
+  kps1 = 7.015626e+00,     # Product separation from donor complex
+  kb1  = 1.847824e+01,     # Back reaction rate for donor complex
+  ket2 = 1.037287e+05,     # Electron transfer to acceptor
+  kb2  = 8.154705e-02,     #1.57 # Back reaction for acceptor complex
+  kps2 = 9.970302e+02      # Product separation from acceptor complex
 )
 
-##Note: The last values were found in the data fitting at a potential of 0.75 V
+##Note: The last values were found in the data fitting at a potential of 0.80 V
 ## To add the constant parameters ---
 ####### CONSTANTS ######################################
 ##Further constants
@@ -169,13 +169,13 @@ Photocurrent     <-function(k){
   #The initial concentration
   # yini2           <-out1[length(out1[,1]),2:length(out1[1,])]  # Is the concentration of all species at time = t
   # k[1]=0.0        #No light
-  # out2            <-lsode(y=yini2,time=times,func=Model1,parms=k)               #ask Ivan 
+  # out2            <-lsode(y=yini2,time=times,func=Model1,parms=k)              
   out             <-out1 #rbind(out1[1:(length(out1[,1])-1),],out2)                   #combine the data provided by ode.1D and lsode 
-  # jph1          <-k[3]*out[,N+2]*out[,2*N+2] + k[6]*out[,4*N+2]*out[,6*N+2] #Rate of electrotransfer I and II
-  # jph2          <--k[5]*out[,3*N+2] - k[7]*out[,7*N+2]                      #Rate of recombination I and II, we need to correct this to Jose's 
-  # jph1          <-Faraday*jph1; jph2<-Faraday*jph2                          #Total current flux for et and b
-  # jph           <-jph1+jph2                                                 #Sum of the current fluxes 
-  time            <-times #seq(0,10.0,by=0.05)                                #Sequence of time, the first 20 seconds
+  # jph1          <-k[3]*out[,N+2]*out[,2*N+2] + k[6]*out[,4*N+2]*out[,6*N+2]         #Rate of electrotransfer I and II
+  # jph2          <--k[5]*out[,3*N+2] - k[7]*out[,7*N+2]                              #Rate of recombination I and II, we need to correct this to Jose's 
+  # jph1          <-Faraday*jph1; jph2<-Faraday*jph2                                  #Total current flux for et and b
+  # jph           <-jph1+jph2                                                         #Sum of the current fluxes 
+  time            <-times #seq(0,10.0,by=0.05)                                        #Sequence of time, the first 20 seconds
   sigma           <- -Faraday*(out[,4*N+2]+out[7*N+2])
   
   ##Function to calculate the potentials of equation h12#####  
@@ -237,12 +237,6 @@ print(Jphcost(k)$model)
 Residuals <- Jphcost(k)  
 plot(Residuals$residuals$res)
 
-### What is the meaning that residuals are not toally zero and not a random trend###
-
-
-# plot(Residuals, ylim= c(-10e-6,3e-6))
-
-
 ## =================================================
 ## Local sensitivity analysis
 ## =================================================
@@ -254,25 +248,19 @@ ident <- collin(Sfun)
 head(ident, n = 20)
 plot(ident, log = "y")
 collin(Sfun, parset = c("Sig", "kd", "ket1", "kps1", "kb1", "ket2", "kb2", "kps2"))
-collinear <- collin(Sfun,  N = 4)
-
-stop("lala")
+collinear <- collin(Sfun,  N = 4)     # Collinearity of 4 parameters 
 
  
 ###  Parameter sampling using Latin Hypercube ----
 
 # Define log-scale bounds for sampling
-# low <- c(-3, -14, -9, -9, -14, -14, -14, -14)
-# up  <- c(5,   5,   7,  7,  10,  10,  10,  10)
-# low <- c(5, 5, 4, -7, -5, 4, -5, -7)
-# up  <- c(18,   18,   17,  5,  6,  17,  7,  7)
 
 # low <-  log(c(1.7e5, 4.9e4,1.2e5, 0.5, 5, 1e5, 0.9, 7.2))
 # up  <-  log(c(2.1e5, 5.4e4,1.5e5, 1, 8.0, 1.6e5, 1.6, 9)) 
 low <-  log(c(2.18e5,   #k3
-              1,     #k4
-              1.1e5,   #k6
-              1e-3   #k8
+              1,        #k4
+              1.1e5,    #k6
+              1e-3      #k8
 ))
 
 up  <-  log(c(3.93e5,
@@ -385,6 +373,7 @@ ini <- Photocurrent(k)
 final <- Photocurrent(kf)
 
 ## Plot the observed photocurrents and the fitted data ---
+
 plot(Obs, xlab = "time/s", ylab = "Jph", ylim= c(0,1.1*max(final[,2])))  # Optionally, limits can be set using ylim/xlim
 # Add a dashed line representing the model prediction using initial parameters
 par(new=TRUE)
@@ -401,8 +390,6 @@ legend("bottomright",
        lwd = c(NA, 2, 2))
 
 
-
-
 # Residuals <- Jphcost(kf)
 # 
 # # Perform local sensitivity analysis for the fitted parameters
@@ -411,9 +398,7 @@ legend("bottomright",
 # ident <- collin(Sfun)
 
 
-stop("lala")
-
-#### Lets make a new NLR with the best parameter found in the last step -----
+#### Second data fitting, using the parameters found in the last step  -----
 Fit2   <- modFit(f = Jphcost2, p = FinalResults[1,3:6] , 
                  method = "Marq", 
                  upper = up, 
@@ -476,21 +461,21 @@ lines(final2[,1], final2[,2], ylim= c(0,1.1*max(Obs[,2])), col = "red", lwd = 2)
 stop("End of second fitting")
 
 
-#### bind all the data in one data frame
-Obs_final          <- as.data.frame(Obs[,1:2])
-Obs_final$group    <- rep("Experimental", length(Obs_final[,2]))
-final2             <- as.data.frame(final2[,1:2])
-final2$group       <- rep("Fitted", length(Obs[,2]))
-final_data         <- rbind(Obs_final, final2)
+#### Bind all the data in one data frame -----
+Obs_final          <- as.data.frame(Obs[,1:2])                   # Experimental data
+Obs_final$group    <- rep("Experimental", length(Obs_final[,2])) # Specify "Experimental data" 
+final2             <- as.data.frame(final2[,1:2])                # Fitted data 
+final2$group       <- rep("Fitted", length(Obs[,2]))             # Specify "Fitted data"
+final_data         <- rbind(Obs_final, final2)                   # Bind all rows together Experimental + Fitted 
 
-#### Save the fitted data in a .txt archive 
+#### Save the fitted data in a .txt archive ------
 # Add the new column 'Potential' with constant value 0.85
 final_data$Potential <- 0.85
 
-## Save the data ---
-write.table(final_data, file = "Fitting2/0.85V/Fitted-0.85V-k3468-01122025-2ndtry.txt", sep ="\t")
+## Save the data ------
+write.table(final_data, file = "Fitting2/0.85V/Fitted-0.85V-k3468-01122025-2ndtry.txt", sep ="\t")  # Save data file 
 
-### Plot the data --- 
+### Plot the experimental data + fitted  --- 
 p1 <- ggplot(aes(time, 1e6*j_ph, linetype =group, color = group, group = group, linewidth = group), data = final_data)+
   geom_line()+
   scale_x_continuous(name = "Time (s)", 
@@ -522,7 +507,7 @@ p1 <- ggplot(aes(time, 1e6*j_ph, linetype =group, color = group, group = group, 
         axis.text.x.top = element_blank(),       # do not show top / right axis labels
         axis.text.y.right = element_blank(),     # for secondary axis
         axis.title.x.top = element_blank(),      # as above, don't show axis titles for
-        axis.title.y.right = element_blank(),   # secondary axis either
+        axis.title.y.right = element_blank(),    # secondary axis either
         legend.position = c(0.8,0.70), #"right",#c(.16,.76),
         legend.direction="vertical",
         legend.key.size = unit(0.5, "cm"), #change legend key size
@@ -539,5 +524,5 @@ ggsave(plot = p1,
        width = 6,
        height = 5, 
        dpi = 300, 
-       filename = "Fitting2/0.85V/Photocurrent-fitted-0.85V-k3468-01112025.png")
+       filename = "Fitting2/0.85V/Photocurrent-fitted-0.85V-k3468-01112025.png")   # Save plot with experimental and fitted data 
 
